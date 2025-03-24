@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação - Banco S</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: rgba(236, 0, 0, 1.0);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        h1, h2, h5 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: white;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: white;
+            color: #ec0000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #f0f0f0;
+        }
+        .resultados {
+            margin-top: 20px;
+            color: white;
+            text-align: left;
+        }
+        .campo {
+            display: none;
+        }
+        .opcoes {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginContainer">
+        <img src="santander.png" alt="Logo Banco Santander" class="logo">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="usuario">Usuário:</label>
+            <input type="text" id="usuario" name="usuario" required>
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required>
+            <button type="button" onclick="validarLogin()">Entrar</button>
+        </form>
+    </div>
+
+    <div class="container opcoes" id="opcoesContainer">
+        <img src="santander.png" alt="Logo Banco Santander" class="logo">
+        <h2>Análise de Risco</h2>
+        <button onclick="mostrarValuation()">Valuation</button>
+        <button onclick="mostrarCarteiraClientes()">Avaliação de Carteira de Clientes</button>
+    </div>
+
+    <div class="container opcoes" id="valuationContainer">
+        <img src="santander.png" alt="Logo Banco Santander" class="logo">
+        <h2>Valuation</h2>
+        <h5>(Avaliação de empresas)</h5>
+        <form id="calculadoraForm">
+            <label for="tipo_calculo">Selecione o tipo de cálculo:</label>
+            <select id="tipo_calculo" onchange="mostrarCampos()">
+                <option value="">Selecione...</option>
+                <option value="ebit">EBIT</option>
+                <option value="ebitda">EBITDA</option>
+                <option value="fluxo_firma">Fluxo de Caixa da Firma</option>
+                <option value="fluxo_acionista">Fluxo de Caixa do Acionista</option>
+                <option value="wacc">WACC</option>
+            </select>
+
+            <div id="campos_ebit" class="campo">
+                <label for="receita">Receita (R$):</label>
+                <input type="number" id="receita" name="receita">
+                <label for="custos">Custos (R$):</label>
+                <input type="number" id="custos" name="custos">
+                <label for="despesas_operacionais">Despesas Operacionais (R$):</label>
+                <input type="number" id="despesas_operacionais" name="despesas_operacionais">
+            </div>
+
+            <div id="campos_ebitda" class="campo">
+                <label for="ebit">EBIT (R$):</label>
+                <input type="number" id="ebit" name="ebit">
+                <label for="depreciacao">Depreciação (R$):</label>
+                <input type="number" id="depreciacao" name="depreciacao">
+                <label for="amortizacao">Amortização (R$):</label>
+                <input type="number" id="amortizacao" name="amortizacao">
+            </div>
+
+            <div id="campos_fluxo_firma" class="campo">
+                <label for="ebitda_firma">EBITDA (R$):</label>
+                <input type="number" id="ebitda_firma" name="ebitda_firma">
+                <label for="investimentos">Investimentos (R$):</label>
+                <input type="number" id="investimentos" name="investimentos">
+                <label for="impostos">Impostos (R$):</label>
+                <input type="number" id="impostos" name="impostos">
+            </div>
+
+            <div id="campos_fluxo_acionista" class="campo">
+                <label for="lucro_liquido">Lucro Líquido (R$):</label>
+                <input type="number" id="lucro_liquido" name="lucro_liquido">
+                <label for="depreciacao_acionista">Depreciação (R$):</label>
+                <input type="number" id="depreciacao_acionista" name="depreciacao_acionista">
+                <label for="investimentos_acionista">Investimentos (R$):</label>
+                <input type="number" id="investimentos_acionista" name="investimentos_acionista">
+            </div>
+
+            <div id="campos_wacc" class="campo">
+                <label for="custo_capital_proprio">Custo do Capital Próprio (%):</label>
+                <input type="number" id="custo_capital_proprio" name="custo_capital_proprio">
+                <label for="custo_divida">Custo da Dívida (%):</label>
+                <input type="number" id="custo_divida" name="custo_divida">
+                <label for="valor_mercado_capital">Valor de Mercado do Capital (R$):</label>
+                <input type="number" id="valor_mercado_capital" name="valor_mercado_capital">
+                <label for="valor_mercado_divida">Valor de Mercado da Dívida (R$):</label>
+                <input type="number" id="valor_mercado_divida" name="valor_mercado_divida">
+                <label for="taxa_imposto">Taxa de Imposto (%):</label>
+                <input type="number" id="taxa_imposto" name="taxa_imposto">
+            </div>
+
+            <button type="button" onclick="calcular()">Calcular</button>
+        </form>
+
+        <div class="resultados" id="resultados">
+            <h2>Resultados:</h2>
+            <p><strong>Resultado:</strong> <span id="resultado">R$ 0,00</span></p>
+        </div>
+        <button onclick="voltarOpcoes()">Voltar</button>
+    </div>
+
+    <div class="container opcoes" id="carteiraClientesContainer">
+        <img src="santander.png" alt="Logo Banco Santander" class="logo">
+        <h2>Avaliação de Carteira de Clientes</h2>
+        <p>Funcionalidade em desenvolvimento.</p>
+        <button onclick="voltarOpcoes()">Voltar</button>
+    </div>
+
+    <script>
+        function validarLogin() {
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            if (usuario === 'admin' && senha === '123') {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('opcoesContainer').style.display = 'block';
+            } else {
+                alert('Usuário ou senha incorretos.');
+            }
+        }
+
+        function mostrarValuation() {
+            document.getElementById('opcoesContainer').style.display = 'none';
+            document.getElementById('valuationContainer').style.display = 'block';
+        }
+
+        function mostrarCarteiraClientes() {
+            document.getElementById('opcoesContainer').style.display = 'none';
+            document.getElementById('carteiraClientesContainer').style.display = 'block';
+        }
+
+        function voltarOpcoes() {
+            document.getElementById('valuationContainer').style.display = 'none';
+            document.getElementById('carteiraClientesContainer').style.display = 'none';
+            document.getElementById('opcoesContainer').style.display = 'block';
+        }
+
+        function mostrarCampos() {
+            const tipo = document.getElementById('tipo_calculo').value;
+            document.querySelectorAll('.campo').forEach(campo => campo.style.display = 'none');
+            if (tipo) {
+                document.getElementById(`campos_${tipo}`).style.display = 'block';
+            }
+        }
+
+        function calcular() {
+            const tipo = document.getElementById('tipo_calculo').value;
+            let resultado = 0;
+
+            switch (tipo) {
+                case 'ebit':
+                    const receita = parseFloat(document.getElementById('receita').value);
+                    const custos = parseFloat(document.getElementById('custos').value);
+                    const despesas_operacionais = parseFloat(document.getElementById('despesas_operacionais').value);
+                    resultado = receita - custos - despesas_operacionais;
+                    break;
+
+                case 'ebitda':
+                    const ebit = parseFloat(document.getElementById('ebit').value);
+                    const depreciacao = parseFloat(document.getElementById('depreciacao').value);
+                    const amortizacao = parseFloat(document.getElementById('amortizacao').value);
+                    resultado = ebit + depreciacao + amortizacao;
+                    break;
+
+                case 'fluxo_firma':
+                    const ebitda_firma = parseFloat(document.getElementById('ebitda_firma').value);
+                    const investimentos = parseFloat(document.getElementById('investimentos').value);
+                    const impostos = parseFloat(document.getElementById('impostos').value);
+                    resultado = ebitda_firma - investimentos - impostos;
+                    break;
+
+                case 'fluxo_acionista':
+                    const lucro_liquido = parseFloat(document.getElementById('lucro_liquido').value);
+                    const depreciacao_acionista = parseFloat(document.getElementById('depreciacao_acionista').value);
+                    const investimentos_acionista = parseFloat(document.getElementById('investimentos_acionista').value);
+                    resultado = lucro_liquido + depreciacao_acionista - investimentos_acionista;
+                    break;
+
+                case 'wacc':
+                    const custo_capital_proprio = parseFloat(document.getElementById('custo_capital_proprio').value) / 100;
+                    const custo_divida = parseFloat(document.getElementById('custo_divida').value) / 100;
+                    const valor_mercado_capital = parseFloat(document.getElementById('valor_mercado_capital').value);
+                    const valor_mercado_divida = parseFloat(document.getElementById('valor_mercado_divida').value);
+                    const taxa_imposto = parseFloat(document.getElementById('taxa_imposto').value) / 100;
+                    const valor_total = valor_mercado_capital + valor_mercado_divida;
+                    resultado = (
+                        (custo_capital_proprio * (valor_mercado_capital / valor_total)) +
+                        (custo_divida * (valor_mercado_divida / valor_total) * (1 - taxa_imposto))
+                    ) * 100;
+                    break;
+
+                default:
+                    alert("Selecione um tipo de cálculo válido.");
+                    return;
+            }
+
+            document.getElementById('resultado').textContent = `R$ ${resultado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        }
+    </script>
+</body>
+</html>
