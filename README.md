@@ -31,6 +31,12 @@ Escolha entre "Valuation" e "Avaliação de Carteira de Clientes".
 
 ---
 
+# CADASTRO DE EMPRESAS (bd): 
+
+Cadastro de empresas para análises...
+
+![image](https://github.com/user-attachments/assets/5b058e92-85aa-40cc-83b8-8924510da74c)
+
 
 # Valuation:
 
