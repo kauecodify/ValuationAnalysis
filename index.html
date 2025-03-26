@@ -13,21 +13,24 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            flex-direction: column;
+            padding: 20px 0;
         }
         .container {
             background-color: rgba(236, 0, 0, 1.0);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 400px;
+            width: 800px;
             text-align: center;
+            margin-bottom: 20px;
         }
         .logo {
             width: 150px;
             margin-bottom: 20px;
         }
-        h1, h2, h5 {
+        h1, h2, h3, h5 {
             color: white;
             margin-bottom: 20px;
         }
@@ -36,6 +39,7 @@
             color: white;
             margin-bottom: 5px;
             font-weight: bold;
+            text-align: left;
         }
         input[type="text"], input[type="number"], input[type="password"], select {
             width: 100%;
@@ -54,6 +58,7 @@
             font-size: 16px;
             cursor: pointer;
             margin-top: 10px;
+            margin-right: 5px;
         }
         button:hover {
             background-color: #f0f0f0;
@@ -69,9 +74,71 @@
         .opcoes {
             display: none;
         }
+        canvas {
+            background-color: white;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .empresas-cadastradas {
+            width: 100%;
+            margin-top: 20px;
+            color: white;
+            text-align: left;
+        }
+        .empresas-cadastradas h3 {
+            border-bottom: 1px solid white;
+            padding-bottom: 10px;
+        }
+        .empresas-cadastradas ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .empresas-cadastradas li {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .empresa-info {
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="container" id="cadastroEmpresaContainer">
+        <img src="santander.png" alt="Logo Banco Santander" class="logo">
+        <h2>Cadastro de Empresas</h2>
+        <form id="cadastroEmpresaForm">
+            <label for="nomeEmpresa">Nome da Empresa:</label>
+            <input type="text" id="nomeEmpresa" name="nomeEmpresa" required>
+            
+            <label for="receitaAnual">Receita Anual (R$):</label>
+            <input type="number" id="receitaAnual" name="receitaAnual" required>
+            
+            <label for="jurosPagos">Juros Pagos Anualmente (R$):</label>
+            <input type="number" id="jurosPagos" name="jurosPagos" required>
+            
+            <label for="ratingPagamento">Rating de Pagamento (1-10):</label>
+            <input type="number" id="ratingPagamento" name="ratingPagamento" min="1" max="10" required>
+            
+            <label for="historicoPagamentos">Histórico de Pagamentos (%):</label>
+            <input type="number" id="historicoPagamentos" name="historicoPagamentos" min="0" max="100" required>
+            
+            <label for="endividamento">Endividamento Total (R$):</label>
+            <input type="number" id="endividamento" name="endividamento" required>
+            
+            <button type="button" onclick="cadastrarEmpresa()">Cadastrar Empresa</button>
+        </form>
+        
+        <div class="empresas-cadastradas">
+            <h3>Empresas Cadastradas</h3>
+            <ul id="listaEmpresas"></ul>
+        </div>
+        
+        <button onclick="mostrarLogin()">Ir para Login</button>
+    </div>
+
     <div class="container" id="loginContainer">
         <img src="santander.png" alt="Logo Banco Santander" class="logo">
         <h2>Login</h2>
@@ -82,6 +149,7 @@
             <input type="password" id="senha" name="senha" required>
             <button type="button" onclick="validarLogin()">Entrar</button>
         </form>
+        <button onclick="mostrarCadastro()">Voltar para Cadastro</button>
     </div>
 
     <div class="container opcoes" id="opcoesContainer">
@@ -89,6 +157,7 @@
         <h2>Análise de Risco</h2>
         <button onclick="mostrarValuation()">Valuation</button>
         <button onclick="mostrarCarteiraClientes()">Avaliação de Carteira de Clientes</button>
+        <button onclick="mostrarCadastro()">Voltar para Cadastro</button>
     </div>
 
     <div class="container opcoes" id="valuationContainer">
@@ -168,11 +237,97 @@
     <div class="container opcoes" id="carteiraClientesContainer">
         <img src="santander.png" alt="Logo Banco Santander" class="logo">
         <h2>Avaliação de Carteira de Clientes</h2>
-        <p>Funcionalidade em desenvolvimento.</p>
+        <button onclick="renderizarGrafico('juros')">Juros Pagos (R$)</button>
+        <button onclick="renderizarGrafico('rating')">Rating de Pagamento</button>
+        <button onclick="renderizarGrafico('historico')">Histórico de Pagamentos (%)</button>
+        <button onclick="renderizarGrafico('endividamento')">Endividamento (R$)</button>
+        <canvas id="graficoClientes"></canvas>
         <button onclick="voltarOpcoes()">Voltar</button>
     </div>
 
     <script>
+        // Banco de dados de empresas
+        let empresas = [
+            { nome: "Tech Solutions SA", receitaAnual: 5000000, jurosPagos: 250000, ratingPagamento: 8, historicoPagamentos: 95, endividamento: 1200000 },
+            { nome: "Indústrias Acme Ltda", receitaAnual: 12000000, jurosPagos: 600000, ratingPagamento: 7, historicoPagamentos: 85, endividamento: 3500000 },
+            { nome: "Comércio Global ME", receitaAnual: 3000000, jurosPagos: 150000, ratingPagamento: 6, historicoPagamentos: 75, endividamento: 800000 },
+            { nome: "Serviços Financeiros XYZ", receitaAnual: 8000000, jurosPagos: 400000, ratingPagamento: 9, historicoPagamentos: 98, endividamento: 2000000 },
+            { nome: "Alimentos Saudáveis S/A", receitaAnual: 4500000, jurosPagos: 225000, ratingPagamento: 7, historicoPagamentos: 88, endividamento: 1100000 },
+            { nome: "Construções Moderna Ltda", receitaAnual: 15000000, jurosPagos: 750000, ratingPagamento: 5, historicoPagamentos: 70, endividamento: 5000000 },
+            { nome: "Varejo Digital EIRELI", receitaAnual: 7000000, jurosPagos: 350000, ratingPagamento: 8, historicoPagamentos: 92, endividamento: 1800000 },
+            { nome: "Transportes Rápidos SA", receitaAnual: 6000000, jurosPagos: 300000, ratingPagamento: 6, historicoPagamentos: 78, endividamento: 1500000 },
+            { nome: "Energia Verde Ltda", receitaAnual: 10000000, jurosPagos: 500000, ratingPagamento: 9, historicoPagamentos: 96, endividamento: 3000000 },
+            { nome: "Consultoria Estratégica ME", receitaAnual: 2500000, jurosPagos: 125000, ratingPagamento: 7, historicoPagamentos: 82, endividamento: 600000 }
+        ];
+
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('cadastroEmpresaContainer').style.display = 'block';
+        atualizarListaEmpresas();
+
+        function mostrarCadastro() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('opcoesContainer').style.display = 'none';
+            document.getElementById('valuationContainer').style.display = 'none';
+            document.getElementById('carteiraClientesContainer').style.display = 'none';
+            document.getElementById('cadastroEmpresaContainer').style.display = 'block';
+        }
+
+        function mostrarLogin() {
+            document.getElementById('cadastroEmpresaContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+        }
+
+        function cadastrarEmpresa() {
+            const nome = document.getElementById('nomeEmpresa').value;
+            const receitaAnual = parseFloat(document.getElementById('receitaAnual').value);
+            const jurosPagos = parseFloat(document.getElementById('jurosPagos').value);
+            const ratingPagamento = parseInt(document.getElementById('ratingPagamento').value);
+            const historicoPagamentos = parseInt(document.getElementById('historicoPagamentos').value);
+            const endividamento = parseFloat(document.getElementById('endividamento').value);
+
+            if (!nome || isNaN(receitaAnual) || isNaN(jurosPagos) || isNaN(ratingPagamento) || isNaN(historicoPagamentos) || isNaN(endividamento)) {
+                alert("Por favor, preencha todos os campos corretamente.");
+                return;
+            }
+
+            empresas.push({
+                nome,
+                receitaAnual,
+                jurosPagos,
+                ratingPagamento,
+                historicoPagamentos,
+                endividamento
+            });
+
+            document.getElementById('cadastroEmpresaForm').reset();
+
+            atualizarListaEmpresas();
+
+            alert("Empresa cadastrada com sucesso!");
+        }
+
+        function atualizarListaEmpresas() {
+            const lista = document.getElementById('listaEmpresas');
+            lista.innerHTML = '';
+
+            empresas.forEach(empresa => {
+                const li = document.createElement('li');
+                const empresaInfo = document.createElement('div');
+                empresaInfo.className = 'empresa-info';
+                
+                const nomeSpan = document.createElement('span');
+                nomeSpan.textContent = empresa.nome;
+                
+                const detalhesSpan = document.createElement('span');
+                detalhesSpan.textContent = `R$ ${empresa.receitaAnual.toLocaleString('pt-BR')} | Rating: ${empresa.ratingPagamento}`;
+                
+                empresaInfo.appendChild(nomeSpan);
+                empresaInfo.appendChild(detalhesSpan);
+                li.appendChild(empresaInfo);
+                lista.appendChild(li);
+            });
+        }
+
         function validarLogin() {
             const usuario = document.getElementById('usuario').value;
             const senha = document.getElementById('senha').value;
@@ -192,6 +347,7 @@
         function mostrarCarteiraClientes() {
             document.getElementById('opcoesContainer').style.display = 'none';
             document.getElementById('carteiraClientesContainer').style.display = 'block';
+            renderizarGrafico('juros'); // Mostrar gráfico de juros por padrão
         }
 
         function voltarOpcoes() {
@@ -260,6 +416,60 @@
             }
 
             document.getElementById('resultado').textContent = `R$ ${resultado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        }
+
+        function renderizarGrafico(tipo) {
+            const ctx = document.getElementById('graficoClientes').getContext('2d');
+            const labels = empresas.map(empresa => empresa.nome);
+            let dataset, label;
+
+            switch (tipo) {
+                case 'juros':
+                    dataset = empresas.map(empresa => empresa.jurosPagos);
+                    label = 'Juros Pagos (R$)';
+                    break;
+                case 'rating':
+                    dataset = empresas.map(empresa => empresa.ratingPagamento);
+                    label = 'Rating de Pagamento (1-10)';
+                    break;
+                case 'historico':
+                    dataset = empresas.map(empresa => empresa.historicoPagamentos);
+                    label = 'Histórico de Pagamentos (%)';
+                    break;
+                case 'endividamento':
+                    dataset = empresas.map(empresa => empresa.endividamento);
+                    label = 'Endividamento (R$)';
+                    break;
+                default:
+                    dataset = [];
+                    label = '';
+            }
+
+            if (window.graficoClientes) {
+                window.graficoClientes.destroy();
+            }
+
+            window.graficoClientes = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: dataset,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
